@@ -4,7 +4,7 @@
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Cocoa
-import XCTest
 
-class SendMoreMoneyConstraint<V, D>: ListConstraint <String, Int> {
+import XCTest
+@testable import SwiftCSP
+
+final class SendMoreMoneyConstraint: ListConstraint <String, Int> {
     
     override init(variables: [String]) {
         super.init(variables: variables)
@@ -42,9 +43,9 @@ class SendMoreMoneyConstraint<V, D>: ListConstraint <String, Int> {
         
         // if all variables have been assigned, check if it adds up correctly
         if assignment.count == variables.count {
-            if let s = assignment["S"], e = assignment["E"], n = assignment["N"], d = assignment["D"], m = assignment["M"], o = assignment["O"], r = assignment["R"], y = assignment["Y"] {
-                let send: Int = s * Int(1000) + e * Int(100) + n * Int(10) + d
-                let more: Int = m * Int(1000) + o * Int(100) + r * Int(10) + e
+            if let s = assignment["S"], let e = assignment["E"], let n = assignment["N"], let d = assignment["D"], let m = assignment["M"], let o = assignment["O"], let r = assignment["R"], let y = assignment["Y"] {
+                let send: Int = s * 1000 + e * 100 + n * 10 + d
+                let more: Int = m * 1000 + o * 100 + r * 10 + e
                 let money: Int = m * 10000 + o * 1000 + n * 100 + e * 10 + y
                 if (send + more) == money {
                     return true;
@@ -73,11 +74,11 @@ class SendMoreMoneyTest: XCTestCase {
             domains[variable] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         }
         domains["S"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        domains["M"] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        domains["M"] = [1]
         
         csp = CSP<String, Int>(variables: variables, domains: domains)
-        let smmc = SendMoreMoneyConstraint<String, Int>(variables: variables)
-        csp?.addConstraint(smmc)
+        let smmc = SendMoreMoneyConstraint(variables: variables)
+        csp?.addConstraint(constraint: smmc)
         
     }
     
@@ -89,14 +90,14 @@ class SendMoreMoneyTest: XCTestCase {
     func testSolution() {
         // This is an example of a functional test case.
         if let cs: CSP<String, Int> = csp {
-            if let solution = backtrackingSearch(cs, mrv: true) {
-                print(solution)
+            if let solution = backtrackingSearch(csp: cs, mrv: true) {
+                print(solution, terminator: "")
                 
-                if let s = solution["S"], e = solution["E"], n = solution["N"], d = solution["D"], m = solution["M"], o = solution["O"], r = solution["R"], y = solution["Y"] {
-                    let send: Int = s * Int(1000) + e * Int(100) + n * Int(10) + d
-                    let more: Int = m * Int(1000) + o * Int(100) + r * Int(10) + e
+                if let s = solution["S"], let e = solution["E"], let n = solution["N"], let d = solution["D"], let m = solution["M"], let o = solution["O"], let r = solution["R"], let y = solution["Y"] {
+                    let send: Int = s * 1000 + e * 100 + n * 10 + d
+                    let more: Int = m * 1000 + o * 100 + r * 10 + e
                     let money: Int = m * 10000 + o * 1000 + n * 100 + e * 10 + y
-                    print("\(send) + \(more) = \(money)")
+                    print("\(send) + \(more) = \(money)", terminator: "")
                     XCTAssertEqual((send + more), money, "Pass")
                 } else {
                     XCTFail("Fail")
@@ -107,5 +108,9 @@ class SendMoreMoneyTest: XCTestCase {
         } else {
             XCTFail("Fail")
         }
-    }    
+    }
+    
+    static var allTests = [
+        ("testSolution", testSolution)
+    ]
 }

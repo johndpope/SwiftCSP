@@ -4,7 +4,7 @@
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Cocoa
-import XCTest
 
-class MapColoringConstraint<V, D>: BinaryConstraint <String, String> {
+import XCTest
+@testable import SwiftCSP
+
+final class MapColoringConstraint: BinaryConstraint <String, String> {
     
     init(place1: String, place2: String) {
         super.init(variable1: place1, variable2: place2)
@@ -58,16 +59,16 @@ class AustralianMapColoringTest: XCTestCase {
         }
         
         csp = CSP<String, String>(variables: variables, domains: domains)
-        csp?.addConstraint(MapColoringConstraint<String,String>(place1: "Western Australia", place2: "Northern Territory"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "Western Australia", place2: "South Australia"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "South Australia", place2: "Northern Territory"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "Queensland", place2: "Northern Territory"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "Queensland",
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Western Australia", place2: "Northern Territory"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Western Australia", place2: "South Australia"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "South Australia", place2: "Northern Territory"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Queensland", place2: "Northern Territory"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Queensland",
             place2: "South Australia"));
-        csp?.addConstraint(MapColoringConstraint<String, String>(place1: "Queensland", place2: "New South Wales"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "New South Wales", place2: "South Australia"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "Victoria", place2: "South Australia"));
-        csp?.addConstraint( MapColoringConstraint<String, String>(place1: "Victoria",place2: "New South Wales"));
+        csp?.addConstraint(constraint:MapColoringConstraint(place1: "Queensland", place2: "New South Wales"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "New South Wales", place2: "South Australia"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Victoria", place2: "South Australia"));
+        csp?.addConstraint(constraint: MapColoringConstraint(place1: "Victoria",place2: "New South Wales"));
     }
     
     override func tearDown() {
@@ -77,16 +78,21 @@ class AustralianMapColoringTest: XCTestCase {
     
     func testSolution() {
         // This is an example of a functional test case.
-        if let cs: CSP<String, String> = csp {
-            if let solution = backtrackingSearch(cs, mrv: false) {
-                print(solution)
-                XCTAssertEqual(solution, ["South Australia": "b", "New South Wales": "g", "Western Australia": "r", "Northern Territory": "g", "Victoria": "r", "Tasmania": "r", "Queensland": "r"], "Pass")
-            } else {
-                XCTFail("Fail")
-            }
+        guard let cs: CSP<String, String> = csp else {
+            XCTFail("Fail")
+            return
+        }
+
+        if let solution = backtrackingSearch(csp: cs, mrv: false) {
+            print(solution, terminator: "")
+            XCTAssertEqual(solution, ["South Australia": "b", "New South Wales": "g", "Western Australia": "r", "Northern Territory": "g", "Victoria": "r", "Tasmania": "r", "Queensland": "r"], "Pass")
         } else {
             XCTFail("Fail")
         }
     }
+    
+    static var allTests = [
+        ("testSolution", testSolution)
+    ]
     
 }

@@ -4,7 +4,7 @@
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Cocoa
 import XCTest
+@testable import SwiftCSP
 
-class EightQueensConstraint<V, D>: ListConstraint <Int, Int> {
+final class EightQueensConstraint: ListConstraint <Int, Int> {
     
     override init(variables: [Int]) {
         super.init(variables: variables)
@@ -37,33 +37,37 @@ class EightQueensConstraint<V, D>: ListConstraint <Int, Int> {
         // not the most efficient check for attacking each other...
         // better to subtract one from the other and go from there
         for q in assignment.values {
-            for (var i = q - 1; q % 8 > i % 8; i--) { //same file backwards
-                if find(assignment.values, i) != nil {
+            for i in (q - (q % 8))..<q{ //same file backwards
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
-            for (var i = q + 1; q % 8 < i % 8; i++) { //same file forwards
-                if find(assignment.values, i) != nil {
+            for i in (q + 1)...(q + (8 - (q % 8))) { //same file forwards
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
-            for (var i = q - 9; i >= 0 && q % 8 > i % 8; i -= 9) { // diagonal up and back
-                if find(assignment.values, i) != nil {
+            for i in stride(from: (q - 9), through: 0, by: -9) { // diagonal up and back
+                guard q % 8 > i % 8 else { break }
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
-            for (var i = q - 7; i >= 0 && q % 8 < i % 8; i -= 7) { // diagonal up and forward
-                if find(assignment.values, i) != nil {
+            for i in stride(from: (q - 7), through: 0, by: -7) { // diagonal up and forward
+                guard q % 8 < i % 8 else { break }
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
-            for (var i = q + 7; i < 64 && i % 8 < q % 8; i += 7) { // diagonal down and back
-                if find(assignment.values, i) != nil {
+            for i in stride(from: (q + 7), to: 64, by: 7) { // diagonal down and back
+                guard i % 8 < q % 8 else { break }
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
-            for (var i = q + 9; i < 64 && q % 8 < i % 8; i += 9) { // diagonal down and forward
-                if find(assignment.values, i) != nil {
+            for i in stride(from: (q + 9), to: 64, by: 9) { // diagonal down and forward
+                guard q % 8 < i % 8 else { break }
+                if assignment.values.index(of: i) != nil {
                     return false
                 }
             }
@@ -76,8 +80,8 @@ class EightQueensConstraint<V, D>: ListConstraint <Int, Int> {
 
 func drawQueens(solution: Dictionary<Int, Int>) {
     var output = "\n"
-    for (var i = 0; i < 64; i++) {
-        if (find(solution.values, i) != nil) {
+    for i in 0..<64 {
+        if (solution.values.index(of: i) != nil) {
             output += "Q"
         } else {
             output += "X"
@@ -86,7 +90,7 @@ func drawQueens(solution: Dictionary<Int, Int>) {
             output += "\n"
         }
     }
-    print(output);
+    print(output, terminator: "");
 }
 
 class EightQueensTest: XCTestCase {
@@ -99,14 +103,14 @@ class EightQueensTest: XCTestCase {
         var domains = Dictionary<Int, [Int]>()
         for variable in variables {
             domains[variable] = []
-            for (var i = variable; i < 64; i += 8) {
+            for i in stride(from: variable, to: 64, by: 8) {
                 domains[variable]?.append(i)
             }
         }
         
         csp = CSP<Int, Int>(variables: variables, domains: domains)
-        let smmc = EightQueensConstraint<Int, Int>(variables: variables)
-        csp?.addConstraint(smmc)
+        let smmc = EightQueensConstraint(variables: variables)
+        csp?.addConstraint(constraint: smmc)
         
     }
     
@@ -118,9 +122,9 @@ class EightQueensTest: XCTestCase {
     func testSolution() {
         // This is an example of a functional test case.
         if let cs: CSP<Int, Int> = csp {
-            if let solution = backtrackingSearch(cs, mrv: true) {
-                print(solution)
-                drawQueens(solution)
+            if let solution = backtrackingSearch(csp: cs, mrv: true) {
+                print(solution, terminator: "")
+                drawQueens(solution: solution)
                 XCTAssertEqual(solution, [2: 58, 4: 20, 5: 53, 6: 14, 7: 31, 0: 0, 1: 33, 3: 43], "Pass")
             } else {
                 XCTFail("Fail")
@@ -128,5 +132,9 @@ class EightQueensTest: XCTestCase {
         } else {
             XCTFail("Fail")
         }
-    }    
+    }
+    
+    static var allTests = [
+        ("testSolution", testSolution)
+    ]
 }

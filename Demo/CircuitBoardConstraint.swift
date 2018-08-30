@@ -1,10 +1,10 @@
 //
-//  CircuitBoard.swift
+//  CircuitBoardConstraint.swift
 //  SwiftCSP
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Cocoa
+import Foundation
 
-class CircuitBoard: NSObject {  //get hashable for free and dynamic access
-    var height: Int = 1
-    var width: Int = 1
-    var color: NSColor = NSColor.redColor()
-    var location: (Int, Int)?
+//A binary constraint that makes sure two Chip variables do not overlap.
+class CircuitBoardConstraint: BinaryConstraint<CircuitBoard, (Int, Int)> {
     
-    //generate the domain as a list of tuples of bottom left corners
-    func generateDomain(boardWidth: Int, boardHeight: Int) -> [(Int, Int)] {
-        var domain: [(Int, Int)] = []
-        for (var x: Int = 0; x < (boardWidth - width + 1); x++) {
-            for (var y: Int = 0; y < (boardHeight - height + 1); y++) {
-                let temp = (x, y)
-                domain.append(temp)
-            }
+    override init(variable1: CircuitBoard, variable2: CircuitBoard) {
+        super.init(variable1: variable1, variable2: variable2)
+        //println(self.variable1.width)
+        //println(self.variable2.width)
+    }
+    
+    override func isSatisfied(assignment: Dictionary<CircuitBoard, (Int, Int)>) -> Bool {
+        //if either variable is not in the assignment then it must be consistent
+        //since they still have their domain
+        if assignment[variable1] == nil || assignment[variable2] == nil {
+            return true
         }
-        return domain
+        //check that var1 does not overlap var2
+        let rect1 = CGRect(x: assignment[variable1]!.0, y: assignment[variable1]!.1, width: variable1.width, height: variable1.height)
+        let rect2 = CGRect(x: assignment[variable2]!.0, y: assignment[variable2]!.1, width: variable2.width, height: variable2.height)
+        return !rect1.intersects(rect2)
+        
     }
 }

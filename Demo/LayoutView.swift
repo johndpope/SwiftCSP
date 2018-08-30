@@ -4,7 +4,7 @@
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@ class LayoutView: NSView {
     let boxDimension: Int = 20
     var circuitBoards: [CircuitBoard] = []
     
-    override func drawRect(dirtyRect: NSRect) {
-        super.drawRect(dirtyRect)
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
 
         // Drawing code here.
         let width = Int(self.frame.size.width)
@@ -42,23 +42,23 @@ class LayoutView: NSView {
             if let loc = board.location {
                 board.color.set()
                 let rect = CGRect(x: Int(loc.0 * (width/boxDimension)), y: Int(loc.1 * (height/boxDimension)), width: Int(board.width * (width/boxDimension)), height: Int(board.height * (height/boxDimension)))
-                NSRectFill(rect)
+                rect.fill()
             }
         }
         
         //draw grid
-        var bPath:NSBezierPath = NSBezierPath()
+        let bPath:NSBezierPath = NSBezierPath()
         
-        for var i: Int = 0; i <= boxDimension; i++ {
-            bPath.moveToPoint(NSMakePoint(CGFloat((width/boxDimension) * i), CGFloat(0)))
-            bPath.lineToPoint(NSMakePoint(CGFloat((width/boxDimension) * i), CGFloat(height)))
+        for i in 0...boxDimension {
+            bPath.move(to: NSMakePoint(CGFloat((width/boxDimension) * i), CGFloat(0)))
+            bPath.line(to: NSMakePoint(CGFloat((width/boxDimension) * i), CGFloat(height)))
         }
-        for var i: Int = 0; i <= boxDimension; i++ {
-            bPath.moveToPoint(NSMakePoint(CGFloat(0), CGFloat((height/boxDimension) * i)))
-            bPath.lineToPoint(NSMakePoint(CGFloat(width), CGFloat((height/boxDimension) * i)))
+        for i in 0...boxDimension {
+            bPath.move(to: NSMakePoint(CGFloat(0), CGFloat((height/boxDimension) * i)))
+            bPath.line(to: NSMakePoint(CGFloat(width), CGFloat((height/boxDimension) * i)))
         }
         
-        NSColor.blackColor().set()
+        NSColor.black.set()
         bPath.stroke()
         
     }

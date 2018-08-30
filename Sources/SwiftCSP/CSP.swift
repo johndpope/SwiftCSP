@@ -4,7 +4,7 @@
 //
 // The SwiftCSP License (MIT)
 //
-// Copyright (c) 2015 David Kopec
+// Copyright (c) 2015-2016 David Kopec
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,18 +40,18 @@ public struct CSP <V: Hashable, D> {
         for variable in variables {
             constraints[variable] = [Constraint]()
             if domains[variable] == nil {
-                print("Error: Missing domain for variable \(variable).")
+                print("Error: Missing domain for variable \(variable).", terminator: "")
             }
         }
     }
     
     /// Add a constraint to the CSP. It will automatically be applied to all the variables it includes. It should only include variables actually in the CSP.
     ///
-    /// :param: constraint The constraint to add.
+    /// - parameter constraint: The constraint to add.
     public mutating func addConstraint(constraint: Constraint<V, D>) {
         for variable in constraint.vars {
-            if find(variables, variable) == nil {
-                print("Error: Could not find variable \(variable) from constraint \(constraint) in CSP.")
+            if !variables.contains(variable) {
+                print("Error: Could not find variable \(variable) from constraint \(constraint) in CSP.", terminator: "")
             }
             constraints[variable]?.append(constraint)
         }
